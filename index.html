@@ -425,6 +425,7 @@
         let obstacles = [];
         let fallSpeed = 3;
         let spawnRate = 1500;
+        let difficultyInterval = null;
 
         // Modi image URL
         const modiImageURL = "https://www.thestatesman.com/wp-content/uploads/2022/09/03_Merged.jpg";
@@ -438,16 +439,13 @@
 
         // --- Event Listeners ---
         playBtn.addEventListener('click', startGame);
-        restartBtn.addEventListener('click', (e) => {
+        function handleRestart(e) {
             e.preventDefault();
             e.stopPropagation();
-            window.location.reload();
-        });
-        restartBtn.addEventListener('touchend', (e) => {
-            e.preventDefault();
-            e.stopPropagation();
-            window.location.reload();
-        });
+            startGame();
+        }
+        restartBtn.addEventListener('click', handleRestart);
+        restartBtn.addEventListener('touchend', handleRestart);
 
         // Keyboard controls
         const keys = {};
@@ -475,6 +473,40 @@
             touchHintTimer = setTimeout(hideTouchHint, 3200);
         }
 
+        // Reset everything so a new run starts cleanly
+        function resetGameState() {
+            if (gameLoop) {
+                cancelAnimationFrame(gameLoop);
+                gameLoop = null;
+            }
+            if (spawnInterval) {
+                clearInterval(spawnInterval);
+                spawnInterval = null;
+            }
+            if (difficultyInterval) {
+                clearInterval(difficultyInterval);
+                difficultyInterval = null;
+            }
+
+            obstacles.forEach(obs => obs.element.remove());
+            obstacles = [];
+
+            score = 0;
+            fallSpeed = 3;
+            spawnRate = 1500;
+            isGameOver = false;
+            scoreDisplay.innerText = score;
+            keys['ArrowLeft'] = false;
+            keys['ArrowRight'] = false;
+
+            gameOverScreen.style.display = 'none';
+            instructions.style.display = 'none';
+            touchControls.style.display = 'none';
+            hideTouchHint();
+            bgMusic.pause();
+            bgMusic.currentTime = 0;
+        }
+
         // Touch controls - tap left/right side of screen
         const touchLeft = document.getElementById('touch-left');
         const touchRight = document.getElementById('touch-right');
@@ -493,6 +525,8 @@
 
         // --- Start Game ---
         function startGame() {
+            resetGameState();
+
             // Play background music
             bgMusic.play().catch(e => console.log('Audio play failed:', e));
             
@@ -517,7 +551,7 @@
             // Increase difficulty over time with caps for human playability
             // Max fall speed: 7 (starts at 3)
             // Min spawn rate: 800ms (starts at 1500ms)
-            setInterval(() => {
+            difficultyInterval = setInterval(() => {
                 if (!isGameOver) {
                     // Increase fall speed gradually, cap at 7
                     if (fallSpeed < 7) {
@@ -608,7 +642,13 @@
         function gameOver() {
             isGameOver = true;
             cancelAnimationFrame(gameLoop);
+            gameLoop = null;
             clearInterval(spawnInterval);
+            spawnInterval = null;
+            if (difficultyInterval) {
+                clearInterval(difficultyInterval);
+                difficultyInterval = null;
+            }
 
             // Stop music
             bgMusic.pause();
@@ -619,6 +659,7 @@
                 highScore = score;
                 localStorage.setItem('highScore', highScore);
             }
+            highScoreDisplay.innerText = highScore;
 
             finalScoreDisplay.innerText = score;
             finalHighScoreDisplay.innerText = highScore;
