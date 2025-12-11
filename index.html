@@ -365,6 +365,11 @@
             <button class="touch-btn" id="left-btn">⬅️</button>
             <button class="touch-btn" id="right-btn">➡️</button>
         </div>
+
+        <!-- Background Music -->
+        <audio id="bgMusic" loop>
+            <source src="cheques.mp4" type="audio/mp4">
+        </audio>
     </div>
 
     <script>
@@ -413,6 +418,10 @@
         // Modi image URL
         const modiImageURL = "https://www.thestatesman.com/wp-content/uploads/2022/09/03_Merged.jpg";
 
+        // Background Music
+        const bgMusic = document.getElementById('bgMusic');
+        bgMusic.volume = 0.5;
+
         // Display saved high score
         highScoreDisplay.innerText = highScore;
 
@@ -444,6 +453,9 @@
 
         // --- Start Game ---
         function startGame() {
+            // Play background music
+            bgMusic.play().catch(e => console.log('Audio play failed:', e));
+            
             const dims = getGameDimensions();
             playerX = (dims.width - dims.playerWidth) / 2;
             player.style.left = playerX + 'px';
@@ -556,6 +568,10 @@
             isGameOver = true;
             cancelAnimationFrame(gameLoop);
             clearInterval(spawnInterval);
+
+            // Stop music
+            bgMusic.pause();
+            bgMusic.currentTime = 0;
 
             // Update high score
             if (score > highScore) {
