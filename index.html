@@ -208,35 +208,43 @@
         #touch-controls {
             display: none;
             position: absolute;
-            bottom: 10px;
+            bottom: 0;
             left: 0;
             right: 0;
-            justify-content: center;
-            gap: 20px;
+            top: 0;
             z-index: 60;
+            pointer-events: none;
         }
 
-        .touch-btn {
-            width: 70px;
-            height: 70px;
-            border-radius: 50%;
+        #touch-left, #touch-right {
+            position: absolute;
+            top: 0;
+            bottom: 0;
+            width: 50%;
+            pointer-events: auto;
+            opacity: 0;
+        }
+
+        #touch-left {
+            left: 0;
+        }
+
+        #touch-right {
+            right: 0;
+        }
+
+        #touch-hint {
+            position: absolute;
+            bottom: 80px;
+            left: 50%;
+            transform: translateX(-50%);
+            font-size: 14px;
+            color: #555;
             background: rgba(255,255,255,0.9);
-            border: 3px solid #FF5722;
-            font-size: 28px;
-            cursor: pointer;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            box-shadow: 0 4px 10px rgba(0,0,0,0.3);
-            user-select: none;
-            -webkit-user-select: none;
-            touch-action: manipulation;
-        }
-
-        .touch-btn:active {
-            background: #FF5722;
-            color: white;
-            transform: scale(0.95);
+            padding: 8px 15px;
+            border-radius: 10px;
+            text-align: center;
+            pointer-events: none;
         }
 
         /* Responsive Styles */
@@ -261,13 +269,13 @@
             }
 
             #player {
-                width: 60px;
-                height: 75px;
+                width: 90px;
+                height: 110px;
             }
 
             .obstacle {
-                width: 50px;
-                height: 65px;
+                width: 80px;
+                height: 100px;
             }
 
             #score-container {
@@ -314,13 +322,13 @@
             }
 
             #player {
-                width: 50px;
-                height: 65px;
+                width: 80px;
+                height: 100px;
             }
 
             .obstacle {
-                width: 45px;
-                height: 55px;
+                width: 70px;
+                height: 90px;
             }
 
             .touch-btn {
@@ -362,8 +370,9 @@
 
         <!-- Mobile Touch Controls -->
         <div id="touch-controls">
-            <button class="touch-btn" id="left-btn">⬅️</button>
-            <button class="touch-btn" id="right-btn">➡️</button>
+            <div id="touch-left"></div>
+            <div id="touch-right"></div>
+            <div id="touch-hint">👈 Tap left side to go LEFT | Tap right side to go RIGHT 👉</div>
         </div>
 
         <!-- Background Music -->
@@ -387,8 +396,6 @@
         const restartBtn = document.getElementById("restart-btn");
         const instructions = document.getElementById("instructions");
         const touchControls = document.getElementById("touch-controls");
-        const leftBtn = document.getElementById("left-btn");
-        const rightBtn = document.getElementById("right-btn");
 
         // --- Responsive Game Dimensions ---
         function getGameDimensions() {
@@ -397,10 +404,10 @@
                 width: rect.width,
                 height: rect.height,
                 groundHeight: window.innerWidth <= 650 ? 50 : 60,
-                playerWidth: window.innerWidth <= 400 ? 50 : (window.innerWidth <= 650 ? 60 : 80),
-                playerHeight: window.innerWidth <= 400 ? 65 : (window.innerWidth <= 650 ? 75 : 100),
-                obstacleWidth: window.innerWidth <= 400 ? 45 : (window.innerWidth <= 650 ? 50 : 70),
-                obstacleHeight: window.innerWidth <= 400 ? 55 : (window.innerWidth <= 650 ? 65 : 90)
+                playerWidth: window.innerWidth <= 400 ? 80 : (window.innerWidth <= 650 ? 90 : 80),
+                playerHeight: window.innerWidth <= 400 ? 100 : (window.innerWidth <= 650 ? 110 : 100),
+                obstacleWidth: window.innerWidth <= 400 ? 70 : (window.innerWidth <= 650 ? 80 : 70),
+                obstacleHeight: window.innerWidth <= 400 ? 90 : (window.innerWidth <= 650 ? 100 : 90)
             };
         }
 
@@ -438,18 +445,21 @@
             keys[e.code] = false;
         });
 
-        // Touch controls
-        leftBtn.addEventListener('touchstart', (e) => { e.preventDefault(); keys['ArrowLeft'] = true; });
-        leftBtn.addEventListener('touchend', (e) => { e.preventDefault(); keys['ArrowLeft'] = false; });
-        leftBtn.addEventListener('mousedown', () => { keys['ArrowLeft'] = true; });
-        leftBtn.addEventListener('mouseup', () => { keys['ArrowLeft'] = false; });
-        leftBtn.addEventListener('mouseleave', () => { keys['ArrowLeft'] = false; });
+        // Touch controls - tap left/right side of screen
+        const touchLeft = document.getElementById('touch-left');
+        const touchRight = document.getElementById('touch-right');
 
-        rightBtn.addEventListener('touchstart', (e) => { e.preventDefault(); keys['ArrowRight'] = true; });
-        rightBtn.addEventListener('touchend', (e) => { e.preventDefault(); keys['ArrowRight'] = false; });
-        rightBtn.addEventListener('mousedown', () => { keys['ArrowRight'] = true; });
-        rightBtn.addEventListener('mouseup', () => { keys['ArrowRight'] = false; });
-        rightBtn.addEventListener('mouseleave', () => { keys['ArrowRight'] = false; });
+        touchLeft.addEventListener('touchstart', (e) => { e.preventDefault(); keys['ArrowLeft'] = true; });
+        touchLeft.addEventListener('touchend', (e) => { e.preventDefault(); keys['ArrowLeft'] = false; });
+        touchLeft.addEventListener('mousedown', () => { keys['ArrowLeft'] = true; });
+        touchLeft.addEventListener('mouseup', () => { keys['ArrowLeft'] = false; });
+        touchLeft.addEventListener('mouseleave', () => { keys['ArrowLeft'] = false; });
+
+        touchRight.addEventListener('touchstart', (e) => { e.preventDefault(); keys['ArrowRight'] = true; });
+        touchRight.addEventListener('touchend', (e) => { e.preventDefault(); keys['ArrowRight'] = false; });
+        touchRight.addEventListener('mousedown', () => { keys['ArrowRight'] = true; });
+        touchRight.addEventListener('mouseup', () => { keys['ArrowRight'] = false; });
+        touchRight.addEventListener('mouseleave', () => { keys['ArrowRight'] = false; });
 
         // --- Start Game ---
         function startGame() {
